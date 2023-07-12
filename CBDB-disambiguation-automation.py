@@ -41,6 +41,8 @@ class setupConditions:
             output.extend(i)
         output = list(set(output))
         return output
+    
+
 
 class getVariousDataTypes:
     
@@ -227,25 +229,38 @@ class compareCBDBAndContents:
     
     def writeCompareResult(self, compareResultList, compareResultListFile):
         output = ""
-        header = ["input_id", "cbdb_id", "person_name", "match_score", "altname_score","altname_match","biogaddr_score","biogaddr_match","entry_score","entry_match","contents", "posting_score", "posting_match", "kin_score", "kin_match", "death_nh_score","death_nh_match"]
+        header = ["input_id", "cbdb_id", "person_name", "match_score", "altname_score","altname_match","biogaddr_score","biogaddr_match","entry_score","entry_match","contents", "posting_score", "posting_match", "kin_score", "kin_match", "death_nh_score","death_nh_match","cbdb_dynasty"]
         data_type_attention = ["altnameList", "biogAddrList", "entryList"]
+        
+        # Lookup personid's dynasty id and dynasty name
+        person_dy = getVariousDataTypes().runQuery('SELECT DISTINCT BIOG_MAIN.c_personid, CAST(DYNASTIES.c_dy AS TEXT), DYNASTIES.c_dynasty_chn FROM DYNASTIES INNER JOIN BIOG_MAIN ON DYNASTIES.c_dy = BIOG_MAIN.c_dy')
         new_compare_result_list = [header]
         for row in compareResultList:
             new_row = []
+            # Create input_id
             new_row.append(row[0])
+            # Create cbdb_id
             new_row.append(row[1])
+            # Create person_name
             new_row.append(row[2])
+            # Create match_score
             new_row.append(row[3]["score_sum"])
+            # Create altname_score, biogaddr_score, entry_score
             for data_type_attention_item in data_type_attention:
                 for match_result_keyword, match_result_data in row[3].items():
                     if match_result_keyword == data_type_attention_item:
                         new_row += match_result_data
             new_row.append(row[-1])
+            # Create posting_score, kin_score, death_nh_score
             for match_result_keyword, match_result_data in row[3].items():
                 if match_result_keyword not in data_type_attention and match_result_keyword != "score_sum":
                     new_row += match_result_data
+            # Create Dynasty column
+            person_dy_item = ""
+            if row[1] in person_dy:
+                person_dy_item = person_dy[row[1]]
+            new_row.append(person_dy_item)
             new_compare_result_list.append(new_row)
-        
         pd.DataFrame(new_compare_result_list).to_csv(compareResultListFile+".csv", sep=",", index=False, header=False)
         pd.DataFrame(new_compare_result_list).to_excel(compareResultListFile+".xlsx", index=False, header=False)
 
@@ -301,7 +316,7 @@ variousDataDict["deathNianhaoList"] = getVariousDataTypesClass.deathNianHao(pers
 print("Combining data...")
 allCBDBDataDict = combineAllData(personIDList, variousDataDict)
 
-print("Here")
+print("Testing id...")
 print(447386 in variousDataDict)
 
 # print(idNameMapping[1])
