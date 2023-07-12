@@ -1,7 +1,7 @@
 # CBDB-disambiguation-automation
 Using CBDB data points to match biography texts
 
-# Usage:
+# Usage
 Please extract the latest.db from [latest.7z](https://github.com/cbdb-project/cbdb_sqlite/blob/master/latest.7z) to the program root directory.
 
 The program root directory looks like this:
