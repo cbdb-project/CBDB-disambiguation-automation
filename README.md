@@ -10,7 +10,10 @@ The program root directory looks like this:
 
 - input.txt (**Please paste the input data from your spreadsheet here. The separator is \t. Step 2)**
 
-  The schema is: {your own personid}{\t}{person name}{\t}{biography}
+  The schema is
+  ```
+  {your own personid}{\t}{person name}{\t}{biography}
+  ```
   
 - CBDB-disambiguation-automation.py (**Main program. Step 3, run it**)
 
