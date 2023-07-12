@@ -1,5 +1,5 @@
 # CBDB-disambiguation-automation
-extract CBDB data points and compare those CBDB data points with long texts
+Using CBDB data points to match biography texts
 
 # Tips:
 Please extract the latest.db from [latest.7z](https://github.com/cbdb-project/cbdb_sqlite/blob/master/latest.7z) to the program root directory.
