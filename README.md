@@ -17,7 +17,7 @@ The program root directory looks like this:
   
 - CBDB-disambiguation-automation.py (**Main program. Step 3, run it**)
 
-- compare-result-list.csv (Output, text file。 **Demo output**)
+- compare-result-list.csv (Output, text file. **Demo output**)
 
 - compare-result-list.xlsx **(Output, Excel file. Step 4)**
 
