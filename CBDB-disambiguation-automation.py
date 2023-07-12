@@ -246,7 +246,7 @@ class compareCBDBAndContents:
                     new_row += match_result_data
             new_compare_result_list.append(new_row)
         
-        pd.DataFrame(new_compare_result_list).to_csv(compareResultListFile+".csv", sep="\t", index=False, header=False)
+        pd.DataFrame(new_compare_result_list).to_csv(compareResultListFile+".csv", sep=",", index=False, header=False)
         pd.DataFrame(new_compare_result_list).to_excel(compareResultListFile+".xlsx", index=False, header=False)
 
 #important variables declare
