@@ -12,7 +12,7 @@ The program root directory looks like this:
 
   The schema is: {your own personid}{\t}{person name}{\t}{biography}
   
-- CBDB-disambiguation-automation.py (**Main program. Step 3 Run it**)
+- CBDB-disambiguation-automation.py (**Main program. Step 3, run it**)
 
 - compare-result-list.txt (Output, text file)
 
