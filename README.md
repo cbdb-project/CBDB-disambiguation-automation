@@ -10,9 +10,9 @@ The program root directory looks like this:
 
 - input.txt (**Please paste the input data from your spreadsheet here. The separator is \t. Step 2)**
 
-- CBDB-disambiguation-automation.py (**Main program. Run it. Step 3**)
-  
   The schema is: {your own personid}{\t}{person name}{\t}{biography}
+  
+- CBDB-disambiguation-automation.py (**Main program. Step 3 Run it**)
 
 - compare-result-list.txt (Output, text file)
 
