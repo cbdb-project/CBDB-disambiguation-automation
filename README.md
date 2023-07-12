@@ -2,18 +2,16 @@
 extract CBDB data points and compare those CBDB data points with long texts
 
 # Tips:
-Please extract latest.db from [latest.7z](https://github.com/cbdb-project/cbdb_sqlite/blob/master/latest.7z) to the program root directory.
+Please extract the latest.db from [latest.7z](https://github.com/cbdb-project/cbdb_sqlite/blob/master/latest.7z) to the program root directory.
 
-The program root will look like this:
+The program root directory looks like this:
 
-latest.db (CBDB SQLite database)
+- latest.db (CBDB SQLite database. Extracted from latest.db)
 
-input.txt.txt (paste your input data here)
+- input.txt (Please paste the input data from your spreadsheet here. The separator is \t)
 
-CBDB-disambiguation-automation.py (main program)
+- CBDB-disambiguation-automation.py (Main program)
 
-compare-result-list.txt (output, text file)
+- compare-result-list.txt (Output, text file)
 
-compare-result-list.xlsx (output, excel file)
-
-
+- compare-result-list.xlsx (Output, Excel file)
