@@ -26,9 +26,10 @@ class setupConditions:
         return output
     
     def setupDy(self, dyList):
-        IDJoin = "\" or \"".join(dyList)
+        IDJoin = "\" or c_dy=\"".join(dyList)
         IDJoin = "\""+IDJoin+"\""
         SQL = "SELECT c_personid FROM BIOG_MAIN WHERE c_dy = %s" % IDJoin
+        print(SQL)
         return self.runQuery(SQL)
     
     def setupIndexYear(self, infYear, supYear):
@@ -328,7 +329,7 @@ print(447386 in variousDataDict)
 # print(variousDataDict["kinList"][325])
 # print(variousDataDict["kinList"][1])
 # print(variousDataDict["deathNianhaoList"][1])
-print(allCBDBDataDict[1])
+# print(allCBDBDataDict[1])
 
 compareCBDBAndContentsClass = compareCBDBAndContents()
 
