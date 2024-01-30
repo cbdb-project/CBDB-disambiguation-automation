@@ -1,7 +1,10 @@
+# pip install char_converter
+
 import sqlite3
 import sys
 import csv
 import pandas as pd
+from char_converter import CharConverter
 
 #setup SQLite database name
 dbName = "latest.db"
@@ -16,6 +19,9 @@ conn = sqlite3.connect(dbName)
 c = conn.cursor()
 # for row in c.execute("SELECT * FROM BIOG_MAIN LIMIT 5"):
 #         print(row)
+
+# setup char converter
+converter = CharConverter('v2s')
 
 class setupConditions:
     
@@ -44,12 +50,16 @@ class setupConditions:
         return output
     
 
-
+# converter.convert(text)
 class getVariousDataTypes:
     
-    def runQuery(self, SQL):
+    def runQuery(self, SQL, idNameMapping = None):
         dataList = []
         for row in c.execute(SQL):
+            if idNameMapping == 1:
+                pass
+            if idNameMapping == 1 and normalizeNameSetting == 1:
+                row = [row[0], converter.convert(row[1])]
             dataList.append(row)
         dataDict = {}
         count = 0
@@ -62,23 +72,51 @@ class getVariousDataTypes:
                 if i[1]==None:
                     continue
                 if len(i)==2:
-                    dataDict[i[0]] = i[1]
+                    if normalizeBiogSetting == 1 and idNameMapping == None:
+                        dataDict[i[0]] = converter.convert(i[1])
+                    else:
+                        dataDict[i[0]] = i[1]
+                    
                 else:
                     i = [j for j in i if j is not None]
-                    dataDict[i[0]] = ";".join(i[1:])
+                    if normalizeBiogSetting == 1 and idNameMapping == None:
+                        dataDict[i[0]] = converter.convert(";".join(i[1:]))
+                    else:
+                        dataDict[i[0]] = ";".join(i[1:])
+                    
             else:
                 if i[1]==None:
                     continue
                 if len(i)==2:
-                    dataDict[i[0]] = dataDict[i[0]] + ";" + i[1]
+                    if normalizeBiogSetting == 1 and idNameMapping == None:
+                        try:
+                            dataDict[i[0]] =  dataDict[i[0]] + ";" + converter.convert(i[1])
+                        except:
+                            print(i[0])
+                            print(i[1])
+                            sys.exit()
+                    else:
+                        dataDict[i[0]] = dataDict[i[0]] + ";" + i[1]
                 else:
-                    i = [j for j in i if j is not None]
+                    new_i = []
+                    for j in i:
+                        if j is not None:
+                            if normalizeBiogSetting == 1 and idNameMapping == None:
+                                if isinstance(j, int):
+                                    new_i.append(j)
+                                else:
+                                    new_i.append(converter.convert(j))
+                            else:
+                                new_i.append(j)
+                    i = new_i
+                    # i = [j for j in i if j is not None]
 #譬如官职
 #如果希望 地名1;官名1;;地名2;官名2 则形如
 # dataDict[i[0]] = dataDict[i[0]] + ";;"+ ";".join(i[1:])
 #如果希望 地名1;官名1;;地名2;官名2 则形如
 # dataDict[i[0]] = dataDict[i[0]] + ";"+ ";".join(i[1:])
                     dataDict[i[0]] = dataDict[i[0]] + ";"+ ";".join(i[1:])
+
         return dataDict
     
     def convertListToString(self, dataList):
@@ -163,7 +201,7 @@ class getVariousDataTypes:
         FROM BIOG_MAIN
         WHERE BIOG_MAIN.c_personid in (%s)
         """ % (personIDListString)
-        return self.runQuery(SQL)
+        return self.runQuery(SQL, idNameMapping = 1)
 
     def nameIDMapping(self, idNameMapping):
         output = {}
@@ -193,6 +231,10 @@ class compareCBDBAndContents:
         with open(contentsName, "r", encoding = "utf-8") as f:
             csvReader = csv.reader(f, delimiter="\t")
             for row in csvReader:
+                if normalizeBiogSetting == 1:
+                    row = [row[0], row[1], converter.convert(row[2])]
+                if normalizeNameSetting == 1:
+                    row[1] = converter.convert(row[1])
                 output.append(row)
         return output
     
@@ -281,6 +323,10 @@ batchIDByDY = setupConditionsClass.setupDy(["7","8","10","11","12","13","15","16
 batchIDByIndexYear = setupConditionsClass.setupIndexYear(907, 1300)
 personIDList = setupConditionsClass.mergeLists([batchIDByDY, batchIDByIndexYear])
 
+#setup variants setting
+normalizeNameSetting = 0
+normalizeBiogSetting = 0
+
 getVariousDataTypesClass = getVariousDataTypes()
 
 #creating ID Name mapping. Ex id:name
@@ -340,7 +386,8 @@ contentsList = compareCBDBAndContentsClass.readContents(contentsName)
 #compare CBDB data in the contents
 compareResultList = compareCBDBAndContentsClass.compareCBDBAndContentsComparing(allCBDBDataDict, nameIDMapping, contentsList)
 print("%s records were mapped" % len(compareResultList))
-print(compareResultList[0])
+print(compareResultList[:5])
+
 
 #write file
 compareCBDBAndContentsClass.writeCompareResult(compareResultList, compareResultListFile)
