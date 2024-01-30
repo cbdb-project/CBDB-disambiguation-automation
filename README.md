@@ -26,3 +26,5 @@ The program root directory looks like this:
 - sqlite3
   
 - pandas
+
+- [char_converter](https://github.com/yukiyuqichen/CHAR)
