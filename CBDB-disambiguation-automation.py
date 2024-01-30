@@ -113,7 +113,7 @@ class getVariousDataTypes:
 #譬如官职
 #如果希望 地名1;官名1;;地名2;官名2 则形如
 # dataDict[i[0]] = dataDict[i[0]] + ";;"+ ";".join(i[1:])
-#如果希望 地名1;官名1;;地名2;官名2 则形如
+#如果希望 地名1;官名1;地名2;官名2 则形如
 # dataDict[i[0]] = dataDict[i[0]] + ";"+ ";".join(i[1:])
                     dataDict[i[0]] = dataDict[i[0]] + ";"+ ";".join(i[1:])
 
