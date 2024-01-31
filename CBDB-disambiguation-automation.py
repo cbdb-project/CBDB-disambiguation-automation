@@ -6,13 +6,13 @@ import csv
 import pandas as pd
 from char_converter import CharConverter
 
-#setup SQLite database name
+# setup SQLite database name
 dbName = "latest.db"
 
-#setup content file name
+# setup content file name
 contentsName = "input.txt"
 
-#output compare result
+# output compare result
 compareResultListFile = "compare-result-list"
 
 conn = sqlite3.connect(dbName)
@@ -110,10 +110,10 @@ class getVariousDataTypes:
                                 new_i.append(j)
                     i = new_i
                     # i = [j for j in i if j is not None]
-#譬如官职
-#如果希望 地名1;官名1;;地名2;官名2 则形如
+# 譬如官职
+# 如果希望 地名1;官名1;;地名2;官名2 则形如
 # dataDict[i[0]] = dataDict[i[0]] + ";;"+ ";".join(i[1:])
-#如果希望 地名1;官名1;地名2;官名2 则形如
+# 如果希望 地名1;官名1;地名2;官名2 则形如
 # dataDict[i[0]] = dataDict[i[0]] + ";"+ ";".join(i[1:])
                     dataDict[i[0]] = dataDict[i[0]] + ";"+ ";".join(i[1:])
 
@@ -122,7 +122,7 @@ class getVariousDataTypes:
     def convertListToString(self, dataList):
         dataList = [str(i) for i in dataList]
         dataList = ",".join(dataList)
-        #dataList = "\""+dataList+"\""
+        # dataList = "\""+dataList+"\""
         return dataList
     
     def altname(self, personIDList):
@@ -171,6 +171,8 @@ class getVariousDataTypes:
     def entry(self, personIDList):
         output = {}
         entry_keyword_list = ["進士", "舉人"]
+        if normalizeBiogSetting == 1:
+            entry_keyword_list = [converter.convert(i) for i in entry_keyword_list]
         personIDListString = self.convertListToString(personIDList)
         SQL = """SELECT DISTINCT ENTRY_DATA.c_personid, ENTRY_CODES.c_entry_desc_chn
         FROM ENTRY_CODES INNER JOIN ENTRY_DATA ON ENTRY_CODES.c_entry_code = ENTRY_DATA.c_entry_code
@@ -307,7 +309,7 @@ class compareCBDBAndContents:
         pd.DataFrame(new_compare_result_list).to_csv(compareResultListFile+".csv", sep=",", index=False, header=False)
         pd.DataFrame(new_compare_result_list).to_excel(compareResultListFile+".xlsx", index=False, header=False)
 
-#important variables declare
+# important variables declare
 variousDataDict = {}
 idNameMapping = {}
 nameIDMapping = {}
@@ -316,50 +318,50 @@ compareResultList = []
 
 setupConditionsClass = setupConditions()
 
-#setup Dynasties
-batchIDByDY = setupConditionsClass.setupDy(["7","8","10","11","12","13","15","16","17","34","38","47","48","49","52","55","57","59","66","78"])
+# setup Dynasties
+batchIDByDY = setupConditionsClass.setupDy(["6","7","8","10","11","12","13","15","16","17","34","38","47","48","49","52","55","57","59","66","78","18"])
 
-#setup indexyear
+# setup indexyear
 batchIDByIndexYear = setupConditionsClass.setupIndexYear(907, 1300)
 personIDList = setupConditionsClass.mergeLists([batchIDByDY, batchIDByIndexYear])
 
-#setup variants setting
+# setup variants setting
 normalizeNameSetting = 0
 normalizeBiogSetting = 0
 
 getVariousDataTypesClass = getVariousDataTypes()
 
-#creating ID Name mapping. Ex id:name
-#and Name ID mapping. Ex name:[id1,id2,id3...]
+# creating ID Name mapping. Ex id:name
+# and Name ID mapping. Ex name:[id1,id2,id3...]
 print("Creating ID Name mapping")
 idNameMapping = getVariousDataTypesClass.idNameMapping(personIDList)
 nameIDMapping = getVariousDataTypesClass.nameIDMapping(idNameMapping)
 
-#get alternative names
+# get alternative names
 print("Collecting alternative name data...")
 variousDataDict["altnameList"] = getVariousDataTypesClass.altname(personIDList)
 
-#get jiguan
+# get jiguan
 print("Collecting jiguan data...")
 variousDataDict["biogAddrList"] = getVariousDataTypesClass.biogAddr(personIDList)
 
-#get postings
+# get postings
 print("Collecting posting data...")
 variousDataDict["postingList"] = getVariousDataTypesClass.posting(personIDList)
 
-#get relatives' names
+# get relatives' names
 print("Collecting kinship data...")
 variousDataDict["kinList"] = getVariousDataTypesClass.kinName(personIDList)
 
-#get entry data
+# get entry data
 print("Collecting entry data...")
 variousDataDict["entryList"] = getVariousDataTypesClass.entry(personIDList)
 
-#get death year Nianhao
+# get death year Nianhao
 print("Collecting death year Nianhao data...")
 variousDataDict["deathNianhaoList"] = getVariousDataTypesClass.deathNianHao(personIDList)
 
-#combine all data
+# combine all data
 print("Combining data...")
 allCBDBDataDict = combineAllData(personIDList, variousDataDict)
 
@@ -379,17 +381,17 @@ print(447386 in variousDataDict)
 
 compareCBDBAndContentsClass = compareCBDBAndContents()
 
-#construct contents
+# construct contents
 print("Constructing contents...")
 contentsList = compareCBDBAndContentsClass.readContents(contentsName)
 
-#compare CBDB data in the contents
+# compare CBDB data in the contents
 compareResultList = compareCBDBAndContentsClass.compareCBDBAndContentsComparing(allCBDBDataDict, nameIDMapping, contentsList)
 print("%s records were mapped" % len(compareResultList))
 print(compareResultList[:5])
 
 
-#write file
+# write file
 compareCBDBAndContentsClass.writeCompareResult(compareResultList, compareResultListFile)
 
 print("Finished")
