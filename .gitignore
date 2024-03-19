@@ -1,5 +1,5 @@
 # cbdb sqlite database
-*.sql
+*.db
 
 # Windows thumbnail cache files
 Thumbs.db
