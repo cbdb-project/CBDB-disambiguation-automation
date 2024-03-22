@@ -153,7 +153,8 @@ class getVariousDataTypes:
                     UNION
                     SELECT DISTINCT BIOG_MAIN.c_personid, ADDR_CODES.c_name_chn
                                     FROM BIOG_MAIN INNER JOIN ADDR_CODES ON BIOG_MAIN.c_index_addr_id = ADDR_CODES.c_addr_id
-                                    WHERE BIOG_MAIN.c_index_addr_id is NOT NULL
+                                    WHERE (BIOG_MAIN.c_index_addr_id IS NOT NULL
+                                            AND BIOG_MAIN.c_index_addr_id! = 0)
                                     AND
                                     (c_personid in (%s))
                     UNION
@@ -170,7 +171,8 @@ class getVariousDataTypes:
                                     FROM BIOG_MAIN INNER JOIN ADDR_CODES ON BIOG_MAIN.c_index_addr_id = ADDR_CODES.c_addr_id
                                                     INNER JOIN ADDR_BELONGS_DATA ON BIOG_MAIN.c_index_addr_id = ADDR_BELONGS_DATA.c_addr_id
                                                     INNER JOIN ADDR_CODES AS ADDR_CODES_FOR_BELONGS ON ADDR_CODES_FOR_BELONGS.c_addr_id = ADDR_BELONGS_DATA.c_belongs_to
-                                    WHERE BIOG_MAIN.c_index_addr_id is NOT NULL
+                                    WHERE (BIOG_MAIN.c_index_addr_id IS NOT NULL
+                                            AND BIOG_MAIN.c_index_addr_id! = 0）
                                     AND
                                     (c_personid in (%s))""" % (
                 personIDListString,

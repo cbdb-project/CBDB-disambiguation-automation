@@ -42,7 +42,7 @@ Description: This setting enables users to define index years for the persons in
 
 Usage: batchIDByIndexYear is set by calling setupConditionsClass.setupIndexYear. Users should provide a list of index years that correspond to the significant events or periods in the lives of the individuals in their data. 
 
-# Adjusting Disambiguation Settings
+# Adjusting Variant Characters Disambiguation Settings
 This program includes two settings that significantly affect the disambiguation process: normalizeNameSetting and normalizeBiogSetting. By default, both settings are set to 0. Adjusting these settings to 1 activates the automatic resolution of 異體字 (variant characters) problems, enhancing the ability to disambiguate data more accurately.
 
 ## Effects of Enabling Settings
@@ -54,3 +54,8 @@ normalizeBiogSetting = 1: This setting applies normalization to biography texts.
 Enabling these settings has been proven to significantly enhance the disambiguation process, as evidenced by higher scores in data matching. This improvement is primarily due to the program's enhanced ability to recognize and reconcile character variations, leading to more accurate matches between the input data and the CBDB database.
 
 However, it's important to note that while enabling these settings increases the accuracy of high-score matches, it also results in the inclusion of more records with lower scores. Users should consider this trade-off when adjusting these settings, based on their specific needs for accuracy versus comprehensiveness in the disambiguation results.
+
+# Upper-Level Administrative Unit Matching for Biographical Addresses
+
+## addrBelongsMatchForBiogAddr
+Description: This configuration option allows for the matching of person' biographical addresses to their corresponding higher-level administrative divisions within CBDB. For example, if a person's biographical address is 貴池, this feature will not only facilitate matching with persons from 貴池, but will also extend the match to include the persons from with 池州, which is the upper-level administrative unit for 貴池.
