@@ -240,7 +240,23 @@ class getVariousDataTypes:
 
     def entry(self, personIDList):
         output = {}
-        entry_keyword_list = ["進士", "舉人"]
+        entry_keyword_list = [
+            "進士",
+            "舉人",
+            "狀元",
+            "榜眼",
+            "探花",
+            "貢生",
+            "貢士",
+            "魁首",
+            "博學鴻",
+            "監生",
+            "廩生",
+            "附生",
+            "宗室",
+            "佾生",
+            "制舉",
+        ]
         if normalizeBiogSetting == 1:
             entry_keyword_list = [converter.convert(i) for i in entry_keyword_list]
         personIDListString = self.convertListToString(personIDList)

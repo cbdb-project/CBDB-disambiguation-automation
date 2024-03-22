@@ -1,6 +1,9 @@
 # cbdb sqlite database
 *.db
 
+# ignore IDE config
+*.json
+
 # Windows thumbnail cache files
 Thumbs.db
 ehthumbs.db
