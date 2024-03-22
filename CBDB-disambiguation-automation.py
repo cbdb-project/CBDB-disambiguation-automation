@@ -21,39 +21,43 @@ c = conn.cursor()
 #         print(row)
 
 # setup char converter
-converter = CharConverter('v2s')
+converter = CharConverter("v2s")
+
 
 class setupConditions:
-    
+
     def runQuery(self, SQL):
         output = []
         for row in c.execute(SQL):
-                output.append(row[0])
+            output.append(row[0])
         return output
-    
+
     def setupDy(self, dyList):
-        IDJoin = "\" or c_dy=\"".join(dyList)
-        IDJoin = "\""+IDJoin+"\""
+        IDJoin = '" or c_dy="'.join(dyList)
+        IDJoin = '"' + IDJoin + '"'
         SQL = "SELECT c_personid FROM BIOG_MAIN WHERE c_dy = %s" % IDJoin
         print(SQL)
         return self.runQuery(SQL)
-    
+
     def setupIndexYear(self, infYear, supYear):
-        SQL = "SELECT c_personid FROM BIOG_MAIN WHERE c_index_year >= %s and c_index_year <= %s" % (infYear, supYear)
+        SQL = (
+            "SELECT c_personid FROM BIOG_MAIN WHERE c_index_year >= %s and c_index_year <= %s"
+            % (infYear, supYear)
+        )
         return self.runQuery(SQL)
-    
+
     def mergeLists(self, dataList):
         output = []
         for i in dataList:
             output.extend(i)
         output = list(set(output))
         return output
-    
+
 
 # converter.convert(text)
 class getVariousDataTypes:
-    
-    def runQuery(self, SQL, idNameMapping = None):
+
+    def runQuery(self, SQL, idNameMapping=None):
         dataList = []
         for row in c.execute(SQL):
             if idNameMapping == 1:
@@ -64,33 +68,35 @@ class getVariousDataTypes:
         dataDict = {}
         count = 0
         for i in dataList:
-            count+=1
+            count += 1
             if i[0] not in dataDict:
-                if len(i)<2:
+                if len(i) < 2:
                     print("输出的资料少于两列")
                     sys.exit()
-                if i[1]==None:
+                if i[1] == None:
                     continue
-                if len(i)==2:
+                if len(i) == 2:
                     if normalizeBiogSetting == 1 and idNameMapping == None:
                         dataDict[i[0]] = converter.convert(i[1])
                     else:
                         dataDict[i[0]] = i[1]
-                    
+
                 else:
                     i = [j for j in i if j is not None]
                     if normalizeBiogSetting == 1 and idNameMapping == None:
                         dataDict[i[0]] = converter.convert(";".join(i[1:]))
                     else:
                         dataDict[i[0]] = ";".join(i[1:])
-                    
+
             else:
-                if i[1]==None:
+                if i[1] == None:
                     continue
-                if len(i)==2:
+                if len(i) == 2:
                     if normalizeBiogSetting == 1 and idNameMapping == None:
                         try:
-                            dataDict[i[0]] =  dataDict[i[0]] + ";" + converter.convert(i[1])
+                            dataDict[i[0]] = (
+                                dataDict[i[0]] + ";" + converter.convert(i[1])
+                            )
                         except:
                             print(i[0])
                             print(i[1])
@@ -110,40 +116,98 @@ class getVariousDataTypes:
                                 new_i.append(j)
                     i = new_i
                     # i = [j for j in i if j is not None]
-# 譬如官职
-# 如果希望 地名1;官名1;;地名2;官名2 则形如
-# dataDict[i[0]] = dataDict[i[0]] + ";;"+ ";".join(i[1:])
-# 如果希望 地名1;官名1;地名2;官名2 则形如
-# dataDict[i[0]] = dataDict[i[0]] + ";"+ ";".join(i[1:])
-                    dataDict[i[0]] = dataDict[i[0]] + ";"+ ";".join(i[1:])
+                    # 譬如官职
+                    # 如果希望 地名1;官名1;;地名2;官名2 则形如
+                    # dataDict[i[0]] = dataDict[i[0]] + ";;"+ ";".join(i[1:])
+                    # 如果希望 地名1;官名1;地名2;官名2 则形如
+                    # dataDict[i[0]] = dataDict[i[0]] + ";"+ ";".join(i[1:])
+                    dataDict[i[0]] = dataDict[i[0]] + ";" + ";".join(i[1:])
 
         return dataDict
-    
+
     def convertListToString(self, dataList):
         dataList = [str(i) for i in dataList]
         dataList = ",".join(dataList)
         # dataList = "\""+dataList+"\""
         return dataList
-    
+
     def altname(self, personIDList):
         personIDListString = self.convertListToString(personIDList)
         SQL = """SELECT DISTINCT ALTNAME_DATA.c_personid, ALTNAME_DATA.c_alt_name_chn
         FROM ALTNAME_DATA
         WHERE c_personid in (%s);
-        """ % (personIDListString)
+        """ % (
+            personIDListString
+        )
         return self.runQuery(SQL)
-    
+
     def biogAddr(self, personIDList):
         personIDListString = self.convertListToString(personIDList)
-        SQL = """SELECT DISTINCT BIOG_ADDR_DATA.c_personid, ADDR_CODES.c_name_chn
-        FROM BIOG_ADDR_DATA INNER JOIN ADDR_CODES ON BIOG_ADDR_DATA.c_addr_id = ADDR_CODES.c_addr_id
-        WHERE
-        (c_addr_type = -1 or c_addr_type = 0 or c_addr_type = 1 or c_addr_type = 14)
-        AND
-        (c_personid in (%s));
-        """ % (personIDListString)
+        if addrBelongsMatchForBiogAddr == 1:
+            SQL = """SELECT DISTINCT BIOG_ADDR_DATA.c_personid, ADDR_CODES.c_name_chn
+                                    FROM BIOG_ADDR_DATA INNER JOIN ADDR_CODES ON BIOG_ADDR_DATA.c_addr_id = ADDR_CODES.c_addr_id
+                                    WHERE
+                                    (BIOG_ADDR_DATA.c_addr_type = -1 or BIOG_ADDR_DATA.c_addr_type = 0 or BIOG_ADDR_DATA.c_addr_type = 1 or BIOG_ADDR_DATA.c_addr_type = 14)
+                                    AND
+                                    (c_personid in (%s))
+                    UNION
+                    SELECT DISTINCT BIOG_MAIN.c_personid, ADDR_CODES.c_name_chn
+                                    FROM BIOG_MAIN INNER JOIN ADDR_CODES ON BIOG_MAIN.c_index_addr_id = ADDR_CODES.c_addr_id
+                                    WHERE BIOG_MAIN.c_index_addr_id is NOT NULL
+                                    AND
+                                    (c_personid in (%s))
+                    UNION
+                    SELECT DISTINCT BIOG_ADDR_DATA.c_personid, ADDR_CODES_FOR_BELONGS.c_name_chn
+                                    FROM BIOG_ADDR_DATA INNER JOIN ADDR_CODES ON BIOG_ADDR_DATA.c_addr_id = ADDR_CODES.c_addr_id
+                                                    INNER JOIN ADDR_BELONGS_DATA ON ADDR_CODES.c_addr_id = ADDR_BELONGS_DATA.c_addr_id
+                                                    INNER JOIN ADDR_CODES AS ADDR_CODES_FOR_BELONGS ON ADDR_CODES_FOR_BELONGS.c_addr_id = ADDR_BELONGS_DATA.c_belongs_to
+                                    WHERE
+                                    (BIOG_ADDR_DATA.c_addr_type = -1 or BIOG_ADDR_DATA.c_addr_type = 0 or BIOG_ADDR_DATA.c_addr_type = 1 or BIOG_ADDR_DATA.c_addr_type = 14)
+                                    AND
+                                    (c_personid in (%s))
+                    UNION
+                    SELECT DISTINCT BIOG_MAIN.c_personid, ADDR_CODES_FOR_BELONGS.c_name_chn
+                                    FROM BIOG_MAIN INNER JOIN ADDR_CODES ON BIOG_MAIN.c_index_addr_id = ADDR_CODES.c_addr_id
+                                                    INNER JOIN ADDR_BELONGS_DATA ON BIOG_MAIN.c_index_addr_id = ADDR_BELONGS_DATA.c_addr_id
+                                                    INNER JOIN ADDR_CODES AS ADDR_CODES_FOR_BELONGS ON ADDR_CODES_FOR_BELONGS.c_addr_id = ADDR_BELONGS_DATA.c_belongs_to
+                                    WHERE BIOG_MAIN.c_index_addr_id is NOT NULL
+                                    AND
+                                    (c_personid in (%s))""" % (
+                personIDListString,
+                personIDListString,
+                personIDListString,
+                personIDListString,
+            )
+
+        else:
+            SQL = """SELECT DISTINCT BIOG_ADDR_DATA.c_personid, ADDR_CODES.c_name_chn
+                FROM BIOG_ADDR_DATA INNER JOIN ADDR_CODES ON BIOG_ADDR_DATA.c_addr_id = ADDR_CODES.c_addr_id
+                WHERE
+                (c_addr_type = -1 or c_addr_type = 0 or c_addr_type = 1 or c_addr_type = 14)
+                AND
+                (c_personid in (%s))
+                UNION
+                SELECT DISTINCT BIOG_MAIN.c_personid, ADDR_CODES.c_name_chn
+                FROM BIOG_MAIN INNER JOIN ADDR_CODES ON BIOG_MAIN.c_index_addr_id = ADDR_CODES.c_addr_id
+                WHERE BIOG_MAIN.c_index_addr_id is NOT NULL
+                AND
+                (c_personid in (%s))
+                """ % (
+                personIDListString,
+                personIDListString,
+            )
+        # else:
+        #     SQL = """SELECT DISTINCT BIOG_ADDR_DATA.c_personid, ADDR_CODES.c_name_chn
+        #         FROM BIOG_ADDR_DATA INNER JOIN ADDR_CODES ON BIOG_ADDR_DATA.c_addr_id = ADDR_CODES.c_addr_id
+        #         WHERE
+        #         (c_addr_type = -1 or c_addr_type = 0 or c_addr_type = 1 or c_addr_type = 14)
+        #         AND
+        #         (c_personid in (%s));
+        #         """ % (
+        #         personIDListString
+        #     )
         return self.runQuery(SQL)
-    
+
     def posting(self, personIDList):
         personIDListString = self.convertListToString(personIDList)
         SQL = """SELECT DISTINCT [POSTED_TO_OFFICE_DATA].[c_personid],
@@ -157,17 +221,21 @@ class getVariousDataTypes:
         LEFT JOIN [ADDR_CODES] ON [ADDR_CODES].[c_addr_id] =
         [POSTED_TO_ADDR_DATA].[c_addr_id]
         WHERE [POSTED_TO_OFFICE_DATA].[c_personid] in (%s);
-        """ % (personIDListString)
+        """ % (
+            personIDListString
+        )
         return self.runQuery(SQL)
-    
+
     def kinName(self, personIDList):
         personIDListString = self.convertListToString(personIDList)
         SQL = """SELECT DISTINCT KIN_DATA.c_personid, BIOG_MAIN.c_mingzi_chn
         FROM KIN_DATA INNER JOIN BIOG_MAIN ON KIN_DATA.c_kin_id = BIOG_MAIN.c_personid
         WHERE KIN_DATA.c_personid in (%s)
-        """ % (personIDListString)
+        """ % (
+            personIDListString
+        )
         return self.runQuery(SQL)
-    
+
     def entry(self, personIDList):
         output = {}
         entry_keyword_list = ["進士", "舉人"]
@@ -177,7 +245,9 @@ class getVariousDataTypes:
         SQL = """SELECT DISTINCT ENTRY_DATA.c_personid, ENTRY_CODES.c_entry_desc_chn
         FROM ENTRY_CODES INNER JOIN ENTRY_DATA ON ENTRY_CODES.c_entry_code = ENTRY_DATA.c_entry_code
         WHERE ENTRY_DATA.c_personid in (%s)
-        """ % (personIDListString)
+        """ % (
+            personIDListString
+        )
         temp_output = self.runQuery(SQL)
         for person_id, entry_content in temp_output.items():
             output[person_id] = []
@@ -188,22 +258,26 @@ class getVariousDataTypes:
                         output[person_id].append(entry_keyword)
             output[person_id] = ";".join(list(set(output[person_id])))
         return output
-    
+
     def deathNianHao(self, personIDList):
         personIDListString = self.convertListToString(personIDList)
         SQL = """SELECT DISTINCT BIOG_MAIN.c_personid, NIAN_HAO.c_nianhao_chn
         FROM NIAN_HAO INNER JOIN BIOG_MAIN ON NIAN_HAO.c_nianhao_id = BIOG_MAIN.c_dy_nh_code
         WHERE BIOG_MAIN.c_personid in (%s)
-        """ % (personIDListString)
+        """ % (
+            personIDListString
+        )
         return self.runQuery(SQL)
-    
+
     def idNameMapping(self, personIDList):
         personIDListString = self.convertListToString(personIDList)
         SQL = """SELECT DISTINCT BIOG_MAIN.c_personid, BIOG_MAIN.c_name_chn
         FROM BIOG_MAIN
         WHERE BIOG_MAIN.c_personid in (%s)
-        """ % (personIDListString)
-        return self.runQuery(SQL, idNameMapping = 1)
+        """ % (
+            personIDListString
+        )
+        return self.runQuery(SQL, idNameMapping=1)
 
     def nameIDMapping(self, idNameMapping):
         output = {}
@@ -214,23 +288,26 @@ class getVariousDataTypes:
                 output[v].append(k)
         return output
 
+
 def combineAllData(personIDList, variousDataDict):
     output = {}
     for cbdb_id in personIDList:
-        if cbdb_id == 0: continue
+        if cbdb_id == 0:
+            continue
         output[cbdb_id] = {}
-        for data_type,data_content in variousDataDict.items():
+        for data_type, data_content in variousDataDict.items():
             if cbdb_id in data_content:
-                output[cbdb_id][data_type] = data_content[cbdb_id]    
+                output[cbdb_id][data_type] = data_content[cbdb_id]
             else:
                 output[cbdb_id][data_type] = ""
     return output
 
+
 class compareCBDBAndContents:
-    
+
     def readContents(self, contentsName):
         output = []
-        with open(contentsName, "r", encoding = "utf-8") as f:
+        with open(contentsName, "r", encoding="utf-8") as f:
             csvReader = csv.reader(f, delimiter="\t")
             for row in csvReader:
                 if normalizeBiogSetting == 1:
@@ -239,7 +316,7 @@ class compareCBDBAndContents:
                     row[1] = converter.convert(row[1])
                 output.append(row)
         return output
-    
+
     def compareByDatapoints(self, allCBDBDataDict, hitID, contents):
         output = {}
         if hitID in allCBDBDataDict:
@@ -249,36 +326,62 @@ class compareCBDBAndContents:
                 catchTermsList = []
                 datapointList = data_content.split(";")
                 for datapointContentInCBDB in datapointList:
-                    if datapointContentInCBDB == "": continue
+                    if datapointContentInCBDB == "":
+                        continue
                     if datapointContentInCBDB in contents:
-                        score+=1
-                        score_sum+=1
+                        score += 1
+                        score_sum += 1
                         catchTermsList.append(datapointContentInCBDB)
                 output[data_type] = [score, ";".join(catchTermsList)]
             output["score_sum"] = score_sum
         return output
-        
-    def compareCBDBAndContentsComparing(self, allCBDBDataDict, nameIDMapping, contentsList):
+
+    def compareCBDBAndContentsComparing(
+        self, allCBDBDataDict, nameIDMapping, contentsList
+    ):
         output = []
         for i in contentsList:
             contentID = i[0]
             contentName = i[1]
             contents = i[2]
             if contentName in nameIDMapping:
-                if nameIDMapping[contentName]==0:
+                if nameIDMapping[contentName] == 0:
                     continue
                 for j in nameIDMapping[contentName]:
-                    match_result = self.compareByDatapoints(allCBDBDataDict, j, contents)
+                    match_result = self.compareByDatapoints(
+                        allCBDBDataDict, j, contents
+                    )
                     output.append([contentID, j, contentName, match_result, contents])
         return output
-    
+
     def writeCompareResult(self, compareResultList, compareResultListFile):
         output = ""
-        header = ["input_id", "cbdb_id", "person_name", "match_score", "altname_score","altname_match","biogaddr_score","biogaddr_match","entry_score","entry_match","contents", "posting_score", "posting_match", "kin_score", "kin_match", "death_nh_score","death_nh_match","cbdb_dynasty"]
+        header = [
+            "input_id",
+            "cbdb_id",
+            "person_name",
+            "match_score",
+            "altname_score",
+            "altname_match",
+            "biogaddr_score",
+            "biogaddr_match",
+            "entry_score",
+            "entry_match",
+            "contents",
+            "posting_score",
+            "posting_match",
+            "kin_score",
+            "kin_match",
+            "death_nh_score",
+            "death_nh_match",
+            "cbdb_dynasty",
+        ]
         data_type_attention = ["altnameList", "biogAddrList", "entryList"]
-        
+
         # Lookup personid's dynasty id and dynasty name
-        person_dy = getVariousDataTypes().runQuery('SELECT DISTINCT BIOG_MAIN.c_personid, CAST(DYNASTIES.c_dy AS TEXT), DYNASTIES.c_dynasty_chn FROM DYNASTIES INNER JOIN BIOG_MAIN ON DYNASTIES.c_dy = BIOG_MAIN.c_dy')
+        person_dy = getVariousDataTypes().runQuery(
+            "SELECT DISTINCT BIOG_MAIN.c_personid, CAST(DYNASTIES.c_dy AS TEXT), DYNASTIES.c_dynasty_chn FROM DYNASTIES INNER JOIN BIOG_MAIN ON DYNASTIES.c_dy = BIOG_MAIN.c_dy"
+        )
         new_compare_result_list = [header]
         for row in compareResultList:
             new_row = []
@@ -298,7 +401,10 @@ class compareCBDBAndContents:
             new_row.append(row[-1])
             # Create posting_score, kin_score, death_nh_score
             for match_result_keyword, match_result_data in row[3].items():
-                if match_result_keyword not in data_type_attention and match_result_keyword != "score_sum":
+                if (
+                    match_result_keyword not in data_type_attention
+                    and match_result_keyword != "score_sum"
+                ):
                     new_row += match_result_data
             # Create Dynasty column
             person_dy_item = ""
@@ -306,8 +412,13 @@ class compareCBDBAndContents:
                 person_dy_item = person_dy[row[1]]
             new_row.append(person_dy_item)
             new_compare_result_list.append(new_row)
-        pd.DataFrame(new_compare_result_list).to_csv(compareResultListFile+".csv", sep=",", index=False, header=False)
-        pd.DataFrame(new_compare_result_list).to_excel(compareResultListFile+".xlsx", index=False, header=False)
+        pd.DataFrame(new_compare_result_list).to_csv(
+            compareResultListFile + ".csv", sep=",", index=False, header=False
+        )
+        pd.DataFrame(new_compare_result_list).to_excel(
+            compareResultListFile + ".xlsx", index=False, header=False
+        )
+
 
 # important variables declare
 variousDataDict = {}
@@ -319,7 +430,32 @@ compareResultList = []
 setupConditionsClass = setupConditions()
 
 # setup Dynasties
-batchIDByDY = setupConditionsClass.setupDy(["6","7","8","10","11","12","13","15","16","17","34","38","47","48","49","52","55","57","59","66","78","18"])
+batchIDByDY = setupConditionsClass.setupDy(
+    [
+        "6",
+        "7",
+        "8",
+        "10",
+        "11",
+        "12",
+        "13",
+        "15",
+        "16",
+        "17",
+        "34",
+        "38",
+        "47",
+        "48",
+        "49",
+        "52",
+        "55",
+        "57",
+        "59",
+        "66",
+        "78",
+        "18",
+    ]
+)
 
 # setup indexyear
 batchIDByIndexYear = setupConditionsClass.setupIndexYear(907, 1300)
@@ -328,6 +464,9 @@ personIDList = setupConditionsClass.mergeLists([batchIDByDY, batchIDByIndexYear]
 # setup variants setting
 normalizeNameSetting = 0
 normalizeBiogSetting = 0
+
+# setup address belongs match
+addrBelongsMatchForBiogAddr = 0
 
 getVariousDataTypesClass = getVariousDataTypes()
 
@@ -359,7 +498,9 @@ variousDataDict["entryList"] = getVariousDataTypesClass.entry(personIDList)
 
 # get death year Nianhao
 print("Collecting death year Nianhao data...")
-variousDataDict["deathNianhaoList"] = getVariousDataTypesClass.deathNianHao(personIDList)
+variousDataDict["deathNianhaoList"] = getVariousDataTypesClass.deathNianHao(
+    personIDList
+)
 
 # combine all data
 print("Combining data...")
@@ -386,7 +527,9 @@ print("Constructing contents...")
 contentsList = compareCBDBAndContentsClass.readContents(contentsName)
 
 # compare CBDB data in the contents
-compareResultList = compareCBDBAndContentsClass.compareCBDBAndContentsComparing(allCBDBDataDict, nameIDMapping, contentsList)
+compareResultList = compareCBDBAndContentsClass.compareCBDBAndContentsComparing(
+    allCBDBDataDict, nameIDMapping, contentsList
+)
 print("%s records were mapped" % len(compareResultList))
 print(compareResultList[:5])
 
