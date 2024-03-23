@@ -470,11 +470,11 @@ batchIDByIndexYear = setupConditionsClass.setupIndexYear(907, 1300)
 personIDList = setupConditionsClass.mergeLists([batchIDByDY, batchIDByIndexYear])
 
 # setup variants setting
-normalizeNameSetting = 1
-normalizeBiogSetting = 1
+normalizeNameSetting = 0
+normalizeBiogSetting = 0
 
 # setup address belongs match
-addrBelongsMatchForBiogAddr = 1
+addrBelongsMatchForBiogAddr = 0
 
 getVariousDataTypesClass = getVariousDataTypes()
 
