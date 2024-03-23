@@ -154,7 +154,7 @@ class getVariousDataTypes:
                     SELECT DISTINCT BIOG_MAIN.c_personid, ADDR_CODES.c_name_chn
                                     FROM BIOG_MAIN INNER JOIN ADDR_CODES ON BIOG_MAIN.c_index_addr_id = ADDR_CODES.c_addr_id
                                     WHERE (BIOG_MAIN.c_index_addr_id IS NOT NULL
-                                            AND BIOG_MAIN.c_index_addr_id! = 0)
+                                            AND BIOG_MAIN.c_index_addr_id != 0)
                                     AND
                                     (c_personid in (%s))
                     UNION
@@ -172,7 +172,7 @@ class getVariousDataTypes:
                                                     INNER JOIN ADDR_BELONGS_DATA ON BIOG_MAIN.c_index_addr_id = ADDR_BELONGS_DATA.c_addr_id
                                                     INNER JOIN ADDR_CODES AS ADDR_CODES_FOR_BELONGS ON ADDR_CODES_FOR_BELONGS.c_addr_id = ADDR_BELONGS_DATA.c_belongs_to
                                     WHERE (BIOG_MAIN.c_index_addr_id IS NOT NULL
-                                            AND BIOG_MAIN.c_index_addr_id! = 0）
+                                            AND BIOG_MAIN.c_index_addr_id != 0)
                                     AND
                                     (c_personid in (%s))""" % (
                 personIDListString,
@@ -198,16 +198,6 @@ class getVariousDataTypes:
                 personIDListString,
                 personIDListString,
             )
-        # else:
-        #     SQL = """SELECT DISTINCT BIOG_ADDR_DATA.c_personid, ADDR_CODES.c_name_chn
-        #         FROM BIOG_ADDR_DATA INNER JOIN ADDR_CODES ON BIOG_ADDR_DATA.c_addr_id = ADDR_CODES.c_addr_id
-        #         WHERE
-        #         (c_addr_type = -1 or c_addr_type = 0 or c_addr_type = 1 or c_addr_type = 14)
-        #         AND
-        #         (c_personid in (%s));
-        #         """ % (
-        #         personIDListString
-        #     )
         return self.runQuery(SQL)
 
     def posting(self, personIDList):
@@ -480,11 +470,11 @@ batchIDByIndexYear = setupConditionsClass.setupIndexYear(907, 1300)
 personIDList = setupConditionsClass.mergeLists([batchIDByDY, batchIDByIndexYear])
 
 # setup variants setting
-normalizeNameSetting = 0
-normalizeBiogSetting = 0
+normalizeNameSetting = 1
+normalizeBiogSetting = 1
 
 # setup address belongs match
-addrBelongsMatchForBiogAddr = 0
+addrBelongsMatchForBiogAddr = 1
 
 getVariousDataTypesClass = getVariousDataTypes()
 
