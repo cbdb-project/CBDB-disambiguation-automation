@@ -401,11 +401,22 @@ class compareCBDBAndContents:
             new_row.append(row[2])
             # Create match_score
             new_row.append(row[3]["score_sum"])
+            biog_addr_orignal_score = 0
             # Create altname_score, biogaddr_score, entry_score
             for data_type_attention_item in data_type_attention:
                 for match_result_keyword, match_result_data in row[3].items():
                     if match_result_keyword == data_type_attention_item:
-                        new_row += match_result_data
+                        # biogAddrList match the Jiguan and the belongs. If there are multiple matches, we only assign 1 score.
+                        if match_result_keyword == "biogAddrList":
+                            biog_addr_orignal_score = match_result_data[0]
+                            if biog_addr_orignal_score > 0:
+                                match_result_data[0] = 1
+                            new_row += match_result_data
+                        else:
+                            new_row += match_result_data
+            # Update match_score base on biogAddrList score = 1 or 0
+            if biog_addr_orignal_score > 0:
+                new_row[3] = row[3]["score_sum"] - biog_addr_orignal_score + 1
             new_row.append(row[-1])
             # Create posting_score, kin_score, death_nh_score
             for match_result_keyword, match_result_data in row[3].items():
