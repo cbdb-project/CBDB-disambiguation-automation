@@ -453,7 +453,8 @@ class compareCBDBAndContents:
                         == 0
                     ):
                         only_zero_score = "yes"
-            new_compare_result_list[index + 1].append(only_zero_score)
+            # new_compare_result_list[index + 1]'s last column is only_zero_score
+            new_compare_result_list[index + 1][-1] = only_zero_score
 
         pd.DataFrame(new_compare_result_list).to_csv(
             compareResultListFile + ".csv", sep=",", index=False, header=False
