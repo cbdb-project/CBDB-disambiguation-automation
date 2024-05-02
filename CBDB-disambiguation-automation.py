@@ -383,6 +383,7 @@ class compareCBDBAndContents:
             "death_nh_score",
             "death_nh_match",
             "cbdb_dynasty",
+            "only_zero_score",
         ]
         data_type_attention = ["altnameList", "biogAddrList", "entryList"]
 
@@ -430,7 +431,30 @@ class compareCBDBAndContents:
             if row[1] in person_dy:
                 person_dy_item = person_dy[row[1]]
             new_row.append(person_dy_item)
+            # create only_zero_score column for the next step
+            new_row.append("")
             new_compare_result_list.append(new_row)
+        print("Creating only_zero_score column...")
+        # Create only_zero_score column
+        compareResultDf = pd.DataFrame(
+            new_compare_result_list[1:], columns=new_compare_result_list[0]
+        )
+        for index, new_row in enumerate(new_compare_result_list[1:]):
+            # # If new_row[3] is 0 and if row[0] records in compareResultList(compareResultList each records' first element is input_id), their scores(compareResultList each records' [3]) are all 0.
+            # # append yes, otherwise no.
+            only_zero_score = "no"
+            if new_row[3] == 0:
+                # check compareResultDf's input_id column, find new_row[0] in all compareResultDf's input_id column, if all of their scores are 0, then only_zero_score is yes.
+                if new_row[0] in compareResultDf["input_id"].values:
+                    if (
+                        compareResultDf[compareResultDf["input_id"] == new_row[0]][
+                            "match_score"
+                        ].sum()
+                        == 0
+                    ):
+                        only_zero_score = "yes"
+            new_compare_result_list[index + 1].append(only_zero_score)
+
         pd.DataFrame(new_compare_result_list).to_csv(
             compareResultListFile + ".csv", sep=",", index=False, header=False
         )
