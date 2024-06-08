@@ -276,6 +276,28 @@ class getVariousDataTypes:
             personIDListString
         )
         return self.runQuery(SQL)
+    
+    def source(self, personIDList):
+        personIDListString = self.convertListToString(personIDList)
+        SQL = """SELECT DISTINCT BIOG_MAIN.c_personid, TEXT_CODES.c_title_chn
+        FROM BIOG_SOURCE_DATA INNER JOIN BIOG_MAIN ON BIOG_SOURCE_DATA.c_personid = BIOG_MAIN.c_personid
+        INNER JOIN TEXT_CODES ON BIOG_SOURCE_DATA.c_textid = TEXT_CODES.c_textid
+        WHERE BIOG_MAIN.c_personid in (%s)
+        """ % (
+            personIDListString
+        )
+        return self.runQuery(SQL)
+
+    def writing(self, personIDList):
+        personIDListString = self.convertListToString(personIDList)
+        SQL = """SELECT DISTINCT BIOG_MAIN.c_personid, TEXT_CODES.c_title_chn
+        FROM BIOG_TEXT_DATA INNER JOIN BIOG_MAIN ON BIOG_TEXT_DATA.c_personid = BIOG_MAIN.c_personid
+        INNER JOIN TEXT_CODES ON BIOG_TEXT_DATA.c_textid = TEXT_CODES.c_textid
+        WHERE BIOG_MAIN.c_personid in (%s)
+        """ % (
+            personIDListString
+        )
+        return self.runQuery(SQL)
 
     def idNameMapping(self, personIDList):
         personIDListString = self.convertListToString(personIDList)
@@ -382,6 +404,10 @@ class compareCBDBAndContents:
             "kin_match",
             "death_nh_score",
             "death_nh_match",
+            "source_score",
+            "source_match",
+            "writing_score",
+            "writing_match",
             "cbdb_dynasty",
             "only_zero_score",
         ]
@@ -545,6 +571,14 @@ print("Collecting death year Nianhao data...")
 variousDataDict["deathNianhaoList"] = getVariousDataTypesClass.deathNianHao(
     personIDList
 )
+
+# get source data
+print("Collecting source data...")
+variousDataDict["sourceList"] = getVariousDataTypesClass.source(personIDList)
+
+# get writing data
+print("Collecting writing data...")
+variousDataDict["writingList"] = getVariousDataTypesClass.writing(personIDList)
 
 # combine all data
 print("Combining data...")
