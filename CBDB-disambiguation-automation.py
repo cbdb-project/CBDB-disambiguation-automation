@@ -276,7 +276,7 @@ class getVariousDataTypes:
             personIDListString
         )
         return self.runQuery(SQL)
-    
+
     def source(self, personIDList):
         personIDListString = self.convertListToString(personIDList)
         SQL = """SELECT DISTINCT BIOG_MAIN.c_personid, TEXT_CODES.c_title_chn
@@ -576,9 +576,24 @@ variousDataDict["deathNianhaoList"] = getVariousDataTypesClass.deathNianHao(
 print("Collecting source data...")
 variousDataDict["sourceList"] = getVariousDataTypesClass.source(personIDList)
 
+
+def cleanWritingData(writing_dic):
+    ouput = {}
+    for k, v in writing_dic.items():
+        ouput[k] = v
+    return ouput
+
+
 # get writing data
 print("Collecting writing data...")
 variousDataDict["writingList"] = getVariousDataTypesClass.writing(personIDList)
+variousDataDict["writingList"] = cleanWritingData(variousDataDict["writingList"])
+# print top 10 of writing data, variousDataDict["writingList"] is a dictionary
+
+print("Top 10 of writing data:")
+for i in list(variousDataDict["writingList"].items())[:10]:
+    print(i)
+raise
 
 # combine all data
 print("Combining data...")
