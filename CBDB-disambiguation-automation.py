@@ -608,6 +608,7 @@ variousDataDict["deathNianhaoList"] = getVariousDataTypesClass.deathNianHao(
 # get source data
 print("Collecting source data...")
 variousDataDict["sourceList"] = getVariousDataTypesClass.source(personIDList)
+variousDataDict["sourceList"] = cleanWritingData(variousDataDict["sourceList"])
 
 # get writing data
 print("Collecting writing data...")
@@ -642,7 +643,7 @@ compareResultList = compareCBDBAndContentsClass.compareCBDBAndContentsComparing(
     allCBDBDataDict, nameIDMapping, contentsList
 )
 print("%s records were mapped" % len(compareResultList))
-print(compareResultList[:2])
+# print(compareResultList[:2])
 
 
 # write file
