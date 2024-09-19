@@ -3,6 +3,7 @@
 import sqlite3
 import sys
 import csv
+import re
 import pandas as pd
 from char_converter import CharConverter
 
@@ -23,6 +24,11 @@ c = conn.cursor()
 # setup char converter
 converter = CharConverter("v2s")
 
+# read nianhao list
+nianhaoList = []
+with open("nianhao.txt", "r", encoding="utf-8") as f:
+    for row in f:
+        nianhaoList.append(row.strip())
 
 class setupConditions:
 
@@ -489,6 +495,33 @@ class compareCBDBAndContents:
             compareResultListFile + ".xlsx", index=False, header=False
         )
 
+def cleanWritingData(writing_dic):
+    ouput = {}
+    prefix_list = ["重修"]
+    for k, v in writing_dic.items():
+        if len(v) <= 1: continue
+        v_original = v
+        # Remove anything within a bracket
+        v = re.sub(r"[\(（][^\(（\)）]*?[\)）]", "", v)
+        # Match prefix from left and remove it
+        for prefix in prefix_list:
+            if v.startswith(prefix):
+                v = v[len(prefix):]
+                break
+        # Match nianhao and remove it
+        for nianhao in nianhaoList:
+            if nianhao in v:
+                v = v.replace(nianhao, "")
+        # Remove the content after :
+        if ":" in v:
+            v = v.split(":")[0]
+        if "：" in v:
+            v = v.split("：")[0]
+        if len(v) <=1:
+            v = v_original
+        ouput[k] = v.strip()
+    return ouput
+
 
 # important variables declare
 variousDataDict = {}
@@ -576,32 +609,17 @@ variousDataDict["deathNianhaoList"] = getVariousDataTypesClass.deathNianHao(
 print("Collecting source data...")
 variousDataDict["sourceList"] = getVariousDataTypesClass.source(personIDList)
 
-
-def cleanWritingData(writing_dic):
-    ouput = {}
-    for k, v in writing_dic.items():
-        ouput[k] = v
-    return ouput
-
-
 # get writing data
 print("Collecting writing data...")
 variousDataDict["writingList"] = getVariousDataTypesClass.writing(personIDList)
 variousDataDict["writingList"] = cleanWritingData(variousDataDict["writingList"])
-# print top 10 of writing data, variousDataDict["writingList"] is a dictionary
-
-print("Top 10 of writing data:")
-for i in list(variousDataDict["writingList"].items())[:10]:
-    print(i)
-raise
 
 # combine all data
 print("Combining data...")
 allCBDBDataDict = combineAllData(personIDList, variousDataDict)
 
-print("Testing id...")
-print(447386 in variousDataDict)
-
+# print("Testing id...")
+# print(447386 in variousDataDict)
 # print(idNameMapping[1])
 # print(nameIDMapping["王安石"])
 # print(nameIDMapping["王臣"])
@@ -624,7 +642,7 @@ compareResultList = compareCBDBAndContentsClass.compareCBDBAndContentsComparing(
     allCBDBDataDict, nameIDMapping, contentsList
 )
 print("%s records were mapped" % len(compareResultList))
-print(compareResultList[:5])
+print(compareResultList[:2])
 
 
 # write file
