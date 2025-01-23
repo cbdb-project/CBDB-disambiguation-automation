@@ -2,7 +2,7 @@
 Using CBDB data points to match biography texts
 
 # Usage
-Please extract the latest.db from [latest.7z](https://github.com/cbdb-project/cbdb_sqlite/blob/master/latest.7z) to the program root directory. **(Step 1)**
+Please extract the latest.db from [latest.7z](https://huggingface.co/datasets/cbdb/cbdb-sqlite/blob/main/latest.7z) to the program root directory. **(Step 1)**
 
 The program root directory looks like this:
 
